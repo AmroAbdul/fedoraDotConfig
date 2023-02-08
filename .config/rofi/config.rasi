@@ -1,0 +1,152 @@
+configuration
+{
+modi:"window,drun,filebrowser,clipboard:greenclip print,power:rofi-power-menu,emoji,run,combi";
+	sidebar-mode:		true;
+  	kb-cancel: "Escape";
+  	kb-mode-next: "Alt+Right,Shift+Right,Control+Tab";
+  	kb-mode-previous: "Alt+Left,Shift+Left,Control+ISO_Left_Tab";
+	yoffset: 0;
+	xoffset: 0;
+    show-icons:		true;
+	display-drun:					"Çalıştır";
+  	display-window:	"Pencere";
+	display-combi:"combi";
+ 	display-filebrowser:	"Dosyalar";
+	// display-run:					"Execute";
+	show-icons:						true;
+    icon-theme:"BeautyLine"; 
+    drun-display-format:            "{name} --- {comment}";
+	hover-select: true;
+	me-select-entry: "MousePrimary";
+	click-to-exit: true;
+
+filebrowser {
+  directories-first:	true;
+  sorting-method:	"name";
+  }
+}
+
+
+window
+{
+	location:						4;
+	anchor:							1;
+	height:							30%;
+	width:							30%;
+	background-color:				@background-alt;
+	text-color:						@foreground-alt;
+	children:						[ mainbox ];
+}
+
+mainbox
+{
+	background-color:				@background-alt;
+	text-color:						@foreground-alt;
+	expand:							true;
+	children:						[ inputbar, listview ];
+}
+
+listview
+{
+	background-color:				@background-alt;
+	text-color:						@foreground-alt;
+    layout:							vertical;
+	dynamic:						false;
+	cycle:							false;
+	padding:						10px 10px 10px 10px;
+    spacing:						10;
+    columns:						4;
+	scrollbar:    					false;
+
+}
+
+inputbar
+{
+	background-color:				@background;
+	text-color:						@foreground-alt;
+	children:						[ entry ];
+}
+
+entry
+{
+	background-color:				@background;
+	text-color:						@foreground-alt;
+	padding:						10px;
+}
+
+element
+{
+	// border:       					1px;
+	// border-color: 					@selected-background;
+	background-color:				@background;
+	text-color:						@foreground-alt;
+    orientation:					vertical;
+	padding:						25px 25px 25px 25px;
+}
+
+element-icon
+{
+    size:							32px;
+}
+
+message {
+    border:       2px 0px 0px ;
+    border-color: @foreground-alt;
+    padding:      100px ;
+}
+
+element.normal.normal
+{
+	background-color:				@background;
+	text-color:						@foreground-alt;
+}
+
+element.normal.urgent
+{
+	background-color:				@urgent-background;
+	text-color:						@urgent-foreground;
+}
+
+element.normal.active
+{
+	background-color:				@active-background;
+	text-color:						@foreground-alt;
+}
+
+element.selected.normal
+{
+	background-image:				@selected-background;
+	text-color:						@foreground-selected;
+}
+
+element.selected.urgent
+{
+	background-color:				@selected-urgent-background;
+	text-color:						@foreground-selected;
+}
+
+element.selected.active
+{
+	background-color:				@selected-active-background;
+	text-color:						@foreground-selected;
+}
+
+element.alternate.normal
+{
+	background-color:				@background;
+	text-color:						@foreground-alt;
+}
+
+element.alternate.urgent
+{
+	background-color:				@urgent-background;
+	text-color:						@foreground-alt;
+}
+
+element.alternate.active
+{
+	background-color:				@active-background;
+	text-color:						@foreground-alt;
+}
+
+@theme "/usr/share/rofi/themes/ColorWithinControl.rasi"
