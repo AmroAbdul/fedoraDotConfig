@@ -1,0 +1,3 @@
+# PSM Certificate Override Settings file
+# This is a generated file!  Do not edit.
+www.afad.gov.tr:443:	OID.2.16.840.1.101.3.4.2.1	C4:34:85:69:A7:05:99:29:AA:AA:DD:B3:99:74:EF:38:8F:3B:1A:63:AD:5B:84:97:94:11:F8:D4:02:32:EA:E9		AAAAAAAAAAAAAAAMAAAAUnyormn/j1n6Gdy2djBQMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEmMCQGA1UEAxMdR2xvYmFsU2lnbiBSU0EgT1YgU1NMIENBIDIwMTg=

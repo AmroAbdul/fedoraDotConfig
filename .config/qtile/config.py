@@ -31,14 +31,14 @@ import socket
 import subprocess
 from typing import List  # noqa: F401
 from libqtile import layout, bar, widget, hook, qtile
-#from libqtile.widget.keyboardlayout import KeyboardLayout
 from libqtile.config import Click, Drag, Group, Key, Match, Screen, Rule
 from libqtile.command import lazy
 from libqtile.widget import Spacer
-import arcobattery
-
+from parts.keys import keys
+from parts.mouse import mouse
 from qtile_extras import widget
-from qtile_extras.widget.decorations import BorderDecoration, PowerLineDecoration
+
+from qtile_extras.widget.decorations import BorderDecoration, PowerLineDecoration, RectDecoration
 
 
 
@@ -49,8 +49,7 @@ from qtile_extras.widget.decorations import BorderDecoration, PowerLineDecoratio
 # }
 #mod4 or mod = super key
 mod = "mod4"
-mod1 = "alt"
-mod2 = "control"
+
 home = os.path.expanduser('~')
 
 
@@ -82,115 +81,8 @@ def window_to_next_group(qtile):
 
 
 
-keys = [
 
-# Most of our keybindings are in sxhkd file - except these
-
-# SUPER + FUNCTION KEYS
-
-    Key([mod], "f", lazy.window.toggle_fullscreen()),
-    Key([mod], "q", lazy.window.kill()),
-    #Key([mod], "b", lazy.function(maximize_on_bar_hide)),
-    Key([mod], "b", lazy.hide_show_bar(position='all')),
-
-
-# SUPER + SHIFT KEYS
-
-    Key([mod, "shift"], "q", lazy.window.kill()),
-    Key([mod, "shift"], "r", lazy.restart()),
-    Key([mod, "shift"], "m", lazy.window.toggle_maximize(), desc="Toggle maximize"),
-    Key([mod, "shift"], "n", lazy.window.toggle_minmize(), desc="Toggle maximize"),
-
-
-
-# QTILE LAYOUT KEYS
-    Key([mod], "n", lazy.layout.normalize()),
-    Key([mod], "space", lazy.next_layout()),
-
-# CHANGE FOCUS
-    Key([mod], "Up", lazy.layout.up()),
-    Key([mod], "Down", lazy.layout.down()),
-    Key([mod], "Left", lazy.layout.left()),
-    Key([mod], "Right", lazy.layout.right()),
-    Key([mod], "k", lazy.layout.up()),
-    Key([mod], "j", lazy.layout.down()),
-    Key([mod], "h", lazy.layout.left()),
-    Key([mod], "l", lazy.layout.right()),
-
-
-# RESIZE UP, DOWN, LEFT, RIGHT
-    Key([mod, "control"], "l",
-        lazy.layout.grow_right(),
-        lazy.layout.grow(),
-        lazy.layout.increase_ratio(),
-        lazy.layout.delete(),
-        ),
-    Key([mod, "control"], "Right",
-        lazy.layout.grow_right(),
-        lazy.layout.grow(),
-        lazy.layout.increase_ratio(),
-        lazy.layout.delete(),
-        ),
-    Key([mod, "control"], "h",
-        lazy.layout.grow_left(),
-        lazy.layout.shrink(),
-        lazy.layout.decrease_ratio(),
-        lazy.layout.add(),
-        ),
-    Key([mod, "control"], "Left",
-        lazy.layout.grow_left(),
-        lazy.layout.shrink(),
-        lazy.layout.decrease_ratio(),
-        lazy.layout.add(),
-        ),
-    Key([mod, "control"], "k",
-        lazy.layout.grow_up(),
-        lazy.layout.grow(),
-        lazy.layout.decrease_nmaster(),
-        ),
-    Key([mod, "control"], "Up",
-        lazy.layout.grow_up(),
-        lazy.layout.grow(),
-        lazy.layout.decrease_nmaster(),
-        ),
-    Key([mod, "control"], "j",
-        lazy.layout.grow_down(),
-        lazy.layout.shrink(),
-        lazy.layout.increase_nmaster(),
-        ),
-    Key([mod, "control"], "Down",
-        lazy.layout.grow_down(),
-        lazy.layout.shrink(),
-        lazy.layout.increase_nmaster(),
-        ),
-
-
-# FLIP LAYOUT FOR MONADTALL/MONADWIDE
-    Key([mod, "shift"], "f", lazy.layout.flip()),
-
-# FLIP LAYOUT FOR BSP
-    Key([mod, "mod1"], "k", lazy.layout.flip_up()),
-    Key([mod, "mod1"], "j", lazy.layout.flip_down()),
-    Key([mod, "mod1"], "l", lazy.layout.flip_right()),
-    Key([mod, "mod1"], "h", lazy.layout.flip_left()),
-
-# MOVE WINDOWS UP OR DOWN BSP LAYOUT
-    Key([mod, "shift"], "k", lazy.layout.shuffle_up()),
-    Key([mod, "shift"], "j", lazy.layout.shuffle_down()),
-    Key([mod, "shift"], "h", lazy.layout.shuffle_left()),
-    Key([mod, "shift"], "l", lazy.layout.shuffle_right()),
-
-# MOVE WINDOWS UP OR DOWN MONADTALL/MONADWIDE LAYOUT
-    Key([mod, "shift"], "Up", lazy.layout.shuffle_up()),
-    Key([mod, "shift"], "Down", lazy.layout.shuffle_down()),
-    Key([mod, "shift"], "Left", lazy.layout.swap_left()),
-    Key([mod, "shift"], "Right", lazy.layout.swap_right()),
-
-# TOGGLE FLOATING LAYOUT
-    Key([mod, "shift"], "space", lazy.window.toggle_floating()),
-
-    ]
-
+#
 def window_to_previous_screen(qtile, switch_group=False, switch_screen=False):
     i = qtile.screens.index(qtile.current_screen)
     if i != 0:
@@ -270,6 +162,17 @@ def init_max_layout_theme():
             "border_normal":"#004545"
             }
 max_layout_theme = init_max_layout_theme()
+@hook.subscribe.layout_change
+def layout_changed(layout, group):
+    if layout.name == "max":
+        # For illustrative purposes, I'm assuming the bar is on the top
+        qtile.current_screen.top.margin = 0
+        # To get the new margin, we have to reconfigure the bar
+        qtile.current_screen.top._configure(qtile, qtile.current_screen)
+        # Now redraw the layout
+        group.layout_all()
+
+
 
 layouts = [
     # default layout is the first one declared
@@ -303,18 +206,18 @@ def init_colors():
             ["#ff00ff", "#ff00ff"], #10
             ["#070915", "#070915"],#11
             ["#91DFAE", "#91DFAE"],#12
-            ["#4c566a", "#4c566a"], #12 
-            ["#282c34", "#282c34"], #13
-            ["#212121", "#212121"], #14
-            ["#e75480", "#e75480"], #15 
-            ["#2aa899", "#2aa899"], #16 
-            ["#abb2bf", "#abb2bf"],# color 17
-            ["#81a1c1", "#81a1c1"], #18 
-            ["#56b6c2", "#56b6c2"], #19 
-            ["#b48ead", "#b48ead"], #20 
-            ["#e06c75", "#e06c75"], #21
-            ["#ff79c6", "#ff79c6"], #22
-            ["#ffb86c", "#ffb86c"]] #23
+            ["#4c566a", "#4c566a"], #13 
+            ["#282c34", "#282c34"], #14
+            ["#212121", "#212121"], #15
+            ["#e75480", "#e75480"], #16 
+            ["#2aa899", "#2aa899"], #17 
+            ["#abb2bf", "#abb2bf"],# 18
+            ["#81a1c1", "#81a1c1"], #19 
+            ["#56b6c2", "#56b6c2"], #20 
+            ["#b48ead", "#b48ead"], #21 
+            ["#e06c75", "#e06c75"], #22
+            ["#ff79c6", "#ff79c6"], #23
+            ["#ffb86c", "#ffb86c"]] #24
 
 
 
@@ -342,23 +245,69 @@ extension_defaults = widget_defaults.copy()
 def init_widgets_list():
     prompt = "{0}@{1}: ".format(os.environ["USER"], socket.gethostname())
     widgets_list = [
-                widget.Image(
-                  filename = "~/.config/qtile/python.png",
-                  background = colors[11],
-                  padding= 1,
-                  mouse_callbacks = {
-                                      'Button1': lambda: qtile.cmd_spawn('rofi -show power'),
 
-                },
-                decorations= [PowerLineDecoration(
-                            path= "rounded_right",                        
-                            colour = colors[6],
-                            border_width = [0, 0, 2, 0],
-                            padding_x = None,
-                            padding_y = None,)
+                widget.Image(
+                  filename = "~/.config/qtile/icons/python.png",
+                  background = colors[22],
+                  padding= 1,
+                  decorations=[
+                                RectDecoration(
+                                            radius=12,
+                                            use_widget_background=True
+                        )
+                    ],
+                  mouse_callbacks = {
+                                      'Button1': lambda: qtile.cmd_spawn('rofi -show p -modi p:rofi-power-menu -font "Saucecodepro NF 16"  -width 9'),
+
+                }
                          
-                         ]
+            
             ),
+               widget.TextBox(
+                font="SauceCode Pro NF",
+                fontsize= 15,
+                text=" 󰊷 ",
+                background = colors[11],
+                foreground = colors[12],
+                padding = 0
+               ),
+               widget.TextBox(
+                font="SauceCode Pro NF",
+                fontsize= 15,
+                text="  ",
+                background = colors[11],
+                foreground = colors[12],
+                padding = 0
+               ),
+               widget.TextBox(
+                font="SauceCode Pro NF",
+                fontsize= 15,
+                text="  ",
+                background = colors[11],
+                foreground = colors[12],
+                padding = 0
+               ),
+               widget.TextBox(
+                font="SauceCode Pro NF",
+                fontsize= 15,
+                text=" 󰊫 ",
+                background = colors[11],
+                foreground = colors[12],
+                padding = 0
+               ),
+               widget.TextBox(
+                font="SauceCode Pro NF",
+                fontsize= 15,
+                text="  ",
+                background = colors[11],
+                foreground = colors[12],
+                padding = 0,
+                
+               ),
+               widget.Sep(
+                foreground=colors[11],
+                background=colors[11]
+               ),
                widget.GroupBox(
                        font = "JetBrains Mono",
                        fontsize = 12,
@@ -367,112 +316,101 @@ def init_widgets_list():
                        padding_y = 5,
                        padding_x = 3,
                        borderwidth = 3,
-                       active = colors[4],
+                       active = colors[16],
                        inactive = colors[7],
                        rounded = False,
                        disable_drag = True,
                        highlight_color = colors[1],
                        highlight_method = "line",
-                       this_current_screen_border = colors[6],
-                       this_screen_border = colors [4],
-                       other_current_screen_border = colors[6],
-                       other_screen_border = colors[4],
                        foreground = colors[12],
                        background = colors[11],
-                       decorations= [PowerLineDecoration(
-                            path= "rounded_right",                        
-                            colour = colors[11],
-                            border_width = [0, 0, 2, 0],
-                            padding_x = None,
-                            padding_y = None,
-                            use_widget_background = True,)
-                         
-                         ]
-                        ),
-               widget.Sep(
-                        linewidth = 0,
-                        padding = 10,
-                        foreground = colors[2],
-                        background = colors[0],
-                        ),
-              widget.CurrentLayoutIcon(
-                       custom_icon_paths = [os.path.expanduser("~/.config/qtile/icons")],
-                       foreground = colors[12],
-                       background = colors[11],
-                       padding = 0,
-                       scale = 0.7,
-                       decorations= [PowerLineDecoration(
-                            path= "rounded_right",                        
-                            colour = colors[11],
-                            border_width = [0, 0, 2, 0],
-                            padding_x = None,
-                            padding_y = None,
-                            use_widget_background = True,
-                            )
-                         
-                         ]
-                       ),
-               widget.CurrentLayout(
-                        font = "Noto Sans",
-                        foreground = colors[12],
-                        background = colors[11],
-                        decorations= [PowerLineDecoration(
-                            path= "rounded_right",                        
-                            colour = colors[11],
-                            border_width = [0, 0, 2, 0],
-                            padding_x = None,
-                            padding_y = None,
-                            use_widget_background = True,)
-                         
-                         ]
+                       this_current_screen_border=colors[18],
+                       decorations=[
+                           BorderDecoration(
+                               colour = colors[9],
+                               border_width = [0, 0, 2, 0],
+                               padding_x = 5,
+                               padding_y = None,
+                           ),
+                           PowerLineDecoration(
+                               path="rounded_right",
+                               colour = colors[9],
+                               border_width = [0, 0, 2, 0],
+                               padding_x = 5,
+                               padding_y = None,
+                           )
+                           
+                    
+                       ],
 
                         ),
                widget.Sep(
                         linewidth = 0,
                         padding = 10,
-                        foreground = colors[11],
-                        background = colors[12],
-                        decorations= [PowerLineDecoration(
-                            path= "rounded_right",                        
-                            colour = colors[11],
-                            border_width = [0, 0, 2, 0],
-                            padding_x = None,
-                            padding_y = None,
-                            use_widget_background = True,)
-                         
-                         ]
-                        ),
-               widget.WindowName(font="Noto Sans Bold",
-
-                        fontsize = 12,
-                        foreground = colors[12],
                         background = colors[11],
-                        decorations= [PowerLineDecoration(
-                            path= "rounded_right",                        
-                            colour = colors[11],
-                            border_width = [0, 0, 2, 0],
-                            padding_x = None,
-                            padding_y = None,)
-                         
-                         ]
+                        
+
                         ),
+               widget.Sep(
+                        linewidth = 0,
+                        padding = 10,
+                        background = colors[11],
+                decorations=[
+                           PowerLineDecoration(
+                               path="rounded_right",
+                               colour = colors[9],
+                               border_width = [0, 0, 2, 0],
+                               padding_x = 5,
+                               padding_y = None,
+                           )
+                       ],
+
+
+
+                        ),
+
+
+
                 widget.Sep(
                        linewidth = 0,
-                       padding = 6,
-                       foreground = colors[0],
-                       background = colors[0],
-                       decorations= [PowerLineDecoration(
-                            path= "rounded_right",                        
-                            colour = colors[6],
-                            border_width = [0, 0, 2, 0],
-                            padding_x = None,
-                            padding_y = None,
-                            use_widget_background = True,)
-                         
-                         ]
+                       padding = 0,
+                       background = colors[11],
+
+                       
+
+
                        ),
         
+               widget.CurrentLayout(
+                        font = "Noto Sans",
+                        foreground = colors[11],
+                        background = colors[7],
 
+               
+
+                        ),
+
+                widget.CurrentLayoutIcon(
+                       custom_icon_paths = [os.path.expanduser("~/.config/qtile/icons")],
+                    #    foreground = colors[19],
+                       background = colors[7],
+                       
+                       padding = 0,
+                       margin_y=7,
+                       font="FontAwesome",
+                       scale = 0.9,
+                        decorations=[
+                           PowerLineDecoration(
+                               path="rounded_right",
+                               colour = colors[9],
+                               border_width = [0, 0, 2, 0],
+                               padding_x = 5,
+                               padding_y = None,
+                           )
+                       ],
+
+                         
+                       ),
                # widget.Net(
                #          font="Noto Sans",
                #          fontsize=12,
@@ -553,23 +491,24 @@ def init_widgets_list():
                #          padding = 0,
                #          fontsize=16
                #          ),
-               widget.CPUGraph(
-                        fill_color = colors[11],
-                        graph_color = colors[12],
-                        background=colors[11],
-                        border_width = 0,
-                        line_width = 2,
-                        core = "all",
-                        type = "line",
-                        decorations= [PowerLineDecoration(
-                            path= "rounded_right",                        
-                            colour = colors[6],
-                            border_width = [0, 0, 2, 0],
-                            padding_x = None,
-                            padding_y = None,)
-                         
-                         ]                      
-                        ),
+            #    widget.CPUGraph(
+            #             fill_color = colors[11],
+            #             graph_color = colors[12],
+            #             background=colors[11],
+            #             border_width = 0,
+            #             line_width = 2,
+            #             core = "all",
+            #             type = "line",
+            #            decorations=[
+            #                BorderDecoration(
+            #                    colour = colors[9],
+            #                    border_width = [0, 0, 2, 0],
+            #                    padding_x = 5,
+            #                    padding_y = None,
+            #                )
+            #            ],
+                
+            #             ),
                # widget.Sep(
                #          linewidth = 1,
                #          padding = 10,
@@ -598,62 +537,97 @@ def init_widgets_list():
                #          foreground = colors[2],
                #          background = colors[1]
                #          ),
+
+
                widget.TextBox(
                         font="FontAwesome",
-                        text="  ",
+                        text="",
                         foreground=colors[0],
                         background=colors[19],
                         padding = 0,
                         fontsize=16,
+                        decorations=[
+                           PowerLineDecoration(
+                               path="rounded_right",
+                               colour = colors[9],
+                               border_width = [0, 0, 2, 0],
+                               padding_x = 5,
+                               padding_y = None,
+                           )
+                       ],
                         ),
                widget.Clock(
                         foreground = colors[0],
                         background = colors[19],
                         fontsize = 12,
-                        format="%Y-%m-%d %H:%M",
+                        padding=0,
+                        format="%d-%m;%H:%M",
                         decorations=[
-                           BorderDecoration(
-                               colour = colors[6],
+                           PowerLineDecoration(
+                               path="rounded_right",
+                               colour = colors[9],
                                border_width = [0, 0, 2, 0],
                                padding_x = 5,
                                padding_y = None,
-                           ),
-                           PowerLineDecoration(
-                            path= "rounded_right",                        
-                            colour = colors[6],
-                            border_width = [0, 0, 2, 0],
-                            padding_x = None,
-                            padding_y = None,)
-                         
-                         
+                           )
                        ],
+
+
                         ),
+                widget.TextBox(
+                    background=colors[19],
+                    foreground=colors[0],
+                    font="FontAwesome",
+                    padding=0,
+                    fontsize=16,
+                    text="󱑏 ",
+                    decorations=[
+                           PowerLineDecoration(
+                               path="rounded_right",
+                               colour = colors[9],
+                               border_width = [0, 0, 2, 0],
+                               padding_x = 5,
+                               padding_y = None,
+                           )
+                       ],
+
+
+                ),
+
                # widget.Sep(
                #          linewidth = 1,
                #          padding = 10,
                #          foreground = colors[2],
                #          background = colors[1]
                #          ),
+
                 widget.KeyboardLayout(
                          font="Noto Sans Bold",
                          configured_keyboards = ['us', 'tr', 'ar'],
                          display_map = {'us':'EN','tr':'TR','ar':'AR'},
                          fontsize = 12,
-                         foreground = colors[0],
-                         background = colors[4],
-                         decorations= [PowerLineDecoration(
-                            path= "rounded_right",                        
-                            colour = colors[9],
-                            border_width = [0, 0, 2, 0],
-                            padding_x = None,
-                            padding_y = None,)
-                         
-                         ]
+                         foreground = colors[15],
+                         background = colors[12],
+                        decorations=[
+                           PowerLineDecoration(
+                               path="rounded_right",
+                               colour = colors[9],
+                               border_width = [0, 0, 2, 0],
+                               padding_x = 5,
+                               padding_y = None,
+                           )
+                       ],
+
                         ),
+
+
                widget.Systray(
                         background=colors[2],
                         icon_size=20,
-                        padding = 10
+                        padding = 0,
+
+
+
                         ),
               ]
     return widgets_list
@@ -661,31 +635,72 @@ def init_widgets_list():
 widgets_list = init_widgets_list()
 
 
+
+def init_bottom_widgets():
+    prompt = "{0}@{1}: ".format(os.environ["USER"], socket.gethostname())
+    widget_list2 = [
+
+
+               widget.WindowName(font="Noto Sans Bold",
+
+                        fontsize = 12,
+                        format='{state}{name}',
+                        foreground = colors[12],
+                        background = colors[11],
+                        padding=9,
+                        decorations=[
+                           PowerLineDecoration(
+                               path="rounded_right",
+                               colour = colors[9],
+                               border_width = [0, 0, 2, 0],
+                               padding_x = 5,
+                               padding_y = None,
+                           )
+                       ],)
+
+        
+    ]
+    return widget_list2
+
+widget_list2 = init_bottom_widgets()
+
+
+
 def init_widgets_screen1():
     widgets_screen1 = init_widgets_list()
     return widgets_screen1
 
 def init_widgets_screen2():
-    widgets_screen2 = init_widgets_list()
+    widgets_screen2 = init_bottom_widgets()
     return widgets_screen2
 
 widgets_screen1 = init_widgets_screen1()
 widgets_screen2 = init_widgets_screen2()
 
 
-def init_screens():
-    return [Screen(top=bar.Bar(widgets=init_widgets_screen1(), size=20, opacity=0.9)),
-            Screen(top=bar.Bar(widgets=init_widgets_screen2(), size=20, opacity=0.9))]
-screens = init_screens()
+# def init_screens():
+#     return [Screen(top=bar.Bar(widgets=init_widgets_screen1(), size=20, opacity=1)),
+#            Screen(bottom=bar.Bar(widgets=init_widgets_screen2(),size=20,opacity=1))]
+screens = [
+    Screen(
+        top=bar.Bar(widgets=init_widgets_screen1(), size=20, opacity=1)
+        )
+        ]
 
-
-# MOUSE CONFIGURATION
-mouse = [
-    Drag([mod], "Button1", lazy.window.set_position_floating(),
-         start=lazy.window.get_position()),
-    Drag([mod], "Button3", lazy.window.set_size_floating(),
-         start=lazy.window.get_size())
-]
+# screens = [
+#     Screen(
+#         bottom=bar.Bar([
+#             widget.GroupBox(),
+#             window_name,
+#             ], 30),
+#         ),
+#     Screen(
+#         bottom=bar.Bar([
+#             widget.GroupBox(),
+#             window_name,
+#             ], 30),
+#         )
+#     ]
 
 dgroups_key_binder = None
 dgroups_app_rules = []

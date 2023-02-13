@@ -1,6 +1,6 @@
 configuration
 {
-modi:"window,drun,filebrowser,clipboard:greenclip print,power:rofi-power-menu,emoji,run,combi";
+modi:"window,drun,filebrowser,clipboard:greenclip print,emoji,run,combi";
 	sidebar-mode:		true;
   	kb-cancel: "Escape";
   	kb-mode-next: "Alt+Right,Shift+Right,Control+Tab";
